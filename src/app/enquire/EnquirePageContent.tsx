@@ -72,7 +72,6 @@ export function EnquirePageContent() {
     () => formatResearchContextLine({ step, slug, title, detail }),
     [step, slug, title, detail],
   );
-  const hasContext = Boolean(step || slug || title);
 
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -145,15 +144,6 @@ export function EnquirePageContent() {
         <p className="mt-3 text-slate-600">
           Share a few details—our dedicated team will connect with you soon.
         </p>
-        {hasContext ? (
-          <p className="mt-4 rounded-xl border border-teal-100 bg-teal-50/60 px-4 py-3 text-[12px] leading-relaxed text-teal-900">
-            <span className="font-semibold uppercase tracking-[0.18em] text-teal-800">
-              Context
-            </span>
-            <br />
-            {contextLine}
-          </p>
-        ) : null}
       </div>
 
       {sent ? (
