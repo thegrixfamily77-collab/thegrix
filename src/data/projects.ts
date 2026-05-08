@@ -9,6 +9,8 @@ export interface ProjectCard {
   segmentSlug: string;
   kind: ProjectKind;
   landType?: LandType;
+  /** Optional image URL to override default card/hero imagery. */
+  imageUrl?: string;
   possessionLabel: string;
   brief: string;
   strengths: string[];

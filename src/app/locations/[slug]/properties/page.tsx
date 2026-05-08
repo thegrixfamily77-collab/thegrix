@@ -1,7 +1,6 @@
 import { locationCoverUrl } from "@/data/imagery";
-import { getLocation } from "@/data/locations";
-import { PROJECTS, type LandType, type ProjectKind } from "@/data/projects";
-import { SEGMENTS } from "@/data/segments";
+import type { LandType, ProjectKind } from "@/data/projects";
+import { getLocationLive, getProjectsLive, getSegmentsLive } from "@/lib/content/live-data";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,7 +13,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const loc = getLocation(slug);
+  const loc = await getLocationLive(slug);
   if (!loc) return { title: "Properties · The Grix" };
   return {
     title: `${loc.name} · Properties`,
@@ -39,17 +38,19 @@ function asLandType(v: unknown): LandType | null {
 
 export default async function LocationPropertiesPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const loc = getLocation(slug);
+  const loc = await getLocationLive(slug);
   if (!loc) notFound();
 
+  const segments = await getSegmentsLive();
   const sp = (await searchParams) ?? {};
   const kind = asKind(typeof sp.kind === "string" ? sp.kind : null);
   const segment = typeof sp.segment === "string" ? sp.segment : null;
   const landType = asLandType(typeof sp.land === "string" ? sp.land : null);
-  const segmentTitle = segment ? SEGMENTS.find((s) => s.slug === segment)?.title : null;
+  const segmentTitle = segment ? segments.find((s) => s.slug === segment)?.title : null;
   const cover = locationCoverUrl(slug);
 
-  const allHere = PROJECTS.filter((p) => p.locationSlug === slug);
+  const projects = await getProjectsLive();
+  const allHere = projects.filter((p) => p.locationSlug === slug);
   const filtered = allHere.filter((p) => {
     if (segment && p.segmentSlug !== segment) return false;
     if (segment === "land") {

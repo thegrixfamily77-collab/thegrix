@@ -3,7 +3,7 @@ import "server-only";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-export type ContentKey = "projects" | "locations" | "segments";
+export type ContentKey = "projects" | "locations" | "segments" | "homepage";
 
 function contentDir(): string {
   return path.join(process.cwd(), "content");

@@ -1,8 +1,7 @@
 import { LocationCard } from "@/components/grix/LocationCard";
 import { sectorFeatureImage } from "@/data/imagery";
 import { locationCoverUrl } from "@/data/imagery";
-import { NAVI_MUMBAI_LOCATIONS } from "@/data/locations";
-import { SEGMENTS, getSegment } from "@/data/segments";
+import { getLocationsLive, getSegmentLive, getSegmentsLive } from "@/lib/content/live-data";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,17 +12,18 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  return SEGMENTS.map((s) => ({ slug: s.slug }));
+  const segments = await getSegmentsLive();
+  return segments.map((s) => ({ slug: s.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const seg = getSegment(slug);
+  const seg = await getSegmentLive(slug);
   if (!seg) {
     return { title: "Property type · The Grix" };
   }
   const desc = seg.summary;
-  const hero = sectorFeatureImage(slug);
+  const hero = seg.featureImageUrl?.trim() ? seg.featureImageUrl : sectorFeatureImage(slug);
   const ogImages = [{ url: hero, width: 1200, height: 630, alt: `${seg.title} — illustrative sector context` }];
 
   return {
@@ -49,9 +49,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function SegmentDetail({ params }: Props) {
   const { slug } = await params;
-  const seg = getSegment(slug);
+  const seg = await getSegmentLive(slug);
   if (!seg) notFound();
-  const locationPreviews = [...NAVI_MUMBAI_LOCATIONS]
+  const locations = await getLocationsLive();
+  const locationPreviews = [...locations]
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((l) => ({
       slug: l.slug,
@@ -72,7 +73,7 @@ export default async function SegmentDetail({ params }: Props) {
         <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg shadow-slate-200/50 ring-1 ring-slate-900/[0.04]">
           <div className="relative aspect-[21/9] min-h-[160px] w-full sm:aspect-[24/9]">
             <Image
-              src={sectorFeatureImage(slug)}
+              src={seg.featureImageUrl?.trim() ? seg.featureImageUrl : sectorFeatureImage(slug)}
               alt={`${seg.title} — illustrative sector context`}
               fill
               priority

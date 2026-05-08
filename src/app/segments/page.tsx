@@ -1,5 +1,5 @@
 import { sectorFeatureImage } from "@/data/imagery";
-import { SEGMENTS } from "@/data/segments";
+import { getSegmentsLive } from "@/lib/content/live-data";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,7 +25,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function SegmentsIndex() {
+export default async function SegmentsIndex() {
+  const segments = await getSegmentsLive();
   return (
     <div className="flex flex-col gap-12 pt-10 pb-12">
       <header className="flex flex-col gap-4 border-b border-slate-200 pb-8">
@@ -44,7 +45,7 @@ export default function SegmentsIndex() {
       </header>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        {SEGMENTS.map((s) => (
+        {segments.map((s) => (
           <Link
             key={s.slug}
             href={`/segments/${s.slug}`}
@@ -52,7 +53,7 @@ export default function SegmentsIndex() {
           >
             <div className="relative aspect-[2/1] w-full overflow-hidden sm:aspect-[2.2/1]">
               <Image
-                src={sectorFeatureImage(s.slug)}
+                src={s.featureImageUrl?.trim() ? s.featureImageUrl : sectorFeatureImage(s.slug)}
                 alt={`Illustrative imagery — ${s.title}`}
                 fill
                 className="object-cover opacity-95 transition duration-500 group-hover:scale-[1.03]"

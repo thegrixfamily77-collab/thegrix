@@ -1,8 +1,6 @@
 import { EnquireStepLink } from "@/components/grix/EnquireStepLink";
 import { propertyCardImage } from "@/data/imagery";
-import { getLocation } from "@/data/locations";
-import { PROJECTS } from "@/data/projects";
-import { SEGMENTS } from "@/data/segments";
+import { getLocationLive, getProjectsLive, getSegmentLive } from "@/lib/content/live-data";
 import { ResearchStep } from "@/lib/research-enquiry";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -14,13 +12,16 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  return PROJECTS.map((p) => ({ id: p.id }));
+  const projects = await getProjectsLive();
+  return projects.map((p) => ({ id: p.id }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const p = PROJECTS.find((x) => x.id === id);
+  const projects = await getProjectsLive();
+  const p = projects.find((x) => x.id === id);
   if (!p) return { title: "Property · The Grix" };
+  const image = p.imageUrl?.trim() ? p.imageUrl : propertyCardImage(id);
   return {
     title: `${p.name} · Property`,
     description: p.brief,
@@ -29,20 +30,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${p.name} · The Grix`,
       description: p.brief,
       url: `/properties/${id}`,
-      images: [{ url: propertyCardImage(id), width: 1200, height: 630, alt: p.name }],
+      images: [{ url: image, width: 1200, height: 630, alt: p.name }],
     },
   };
 }
 
 export default async function PropertyDetailPage({ params }: Props) {
   const { id } = await params;
-  const p = PROJECTS.find((x) => x.id === id);
+  const projects = await getProjectsLive();
+  const p = projects.find((x) => x.id === id);
   if (!p) notFound();
 
-  const loc = getLocation(p.locationSlug);
-  const segTitle = SEGMENTS.find((s) => s.slug === p.segmentSlug)?.title ?? p.segmentSlug;
+  const loc = await getLocationLive(p.locationSlug);
+  const seg = await getSegmentLive(p.segmentSlug);
+  const segTitle = seg?.title ?? p.segmentSlug;
 
-  const hero = propertyCardImage(id);
+  const hero = p.imageUrl?.trim() ? p.imageUrl : propertyCardImage(id);
   const gallery = [hero, propertyCardImage(`${id}-b`), propertyCardImage(`${id}-c`)];
 
   return (

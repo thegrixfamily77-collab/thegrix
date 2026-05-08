@@ -18,13 +18,19 @@ const QUOTES: Quote[] = [
 ];
 
 export function InvestmentQuotesTicker({
+  quotes: quotesProp,
   intervalMs = 3000,
 }: {
+  quotes?: Quote[];
   intervalMs?: number;
 }) {
-  const quotes = useMemo(() => QUOTES, []);
+  const quotes = useMemo(() => (quotesProp?.length ? quotesProp : QUOTES), [quotesProp]);
   const [idx, setIdx] = useState(0);
   const [rolling, setRolling] = useState(false);
+
+  useEffect(() => {
+    setIdx(0);
+  }, [quotes]);
 
   useEffect(() => {
     const t = window.setInterval(() => {

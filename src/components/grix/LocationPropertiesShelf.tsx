@@ -1,6 +1,6 @@
 "use client";
 
-import { SEGMENTS } from "@/data/segments";
+import type { SegmentProfile } from "@/data/segments";
 import type { ProjectCard } from "@/data/projects";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -8,25 +8,27 @@ import { useMemo, useState } from "react";
 export function LocationPropertiesShelf({
   locationSlug,
   projects,
+  segments,
   initialSegmentSlug,
 }: {
   locationSlug: string;
   projects: ProjectCard[];
+  segments: SegmentProfile[];
   initialSegmentSlug?: string;
 }) {
   const normalizedInitialSegment = useMemo(() => {
     if (!initialSegmentSlug) return null;
-    return SEGMENTS.some((s) => s.slug === initialSegmentSlug) ? initialSegmentSlug : null;
-  }, [initialSegmentSlug]);
+    return segments.some((s) => s.slug === initialSegmentSlug) ? initialSegmentSlug : null;
+  }, [initialSegmentSlug, segments]);
   const [segmentSlug, setSegmentSlug] = useState<string | null>(normalizedInitialSegment);
 
   const segmentOptions = useMemo(
     () =>
-      SEGMENTS.map((s) => ({
+      segments.map((s) => ({
         slug: s.slug,
         title: s.title,
       })),
-    [],
+    [segments],
   );
 
   const hasAnyProjects = useMemo(() => projects.length > 0, [projects.length]);
@@ -70,7 +72,7 @@ export function LocationPropertiesShelf({
           <p className="text-sm font-semibold text-slate-700">
             Segment selected:{" "}
             <span className="font-display">
-              {SEGMENTS.find((s) => s.slug === normalizedInitialSegment)?.title ?? normalizedInitialSegment}
+              {segments.find((s) => s.slug === normalizedInitialSegment)?.title ?? normalizedInitialSegment}
             </span>
           </p>
         ) : (

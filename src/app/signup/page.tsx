@@ -8,6 +8,7 @@ export default function SignupPage() {
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    void fetch("/api/analytics/signup", { method: "POST", keepalive: true }).catch(() => {});
     setNotice(true);
   }
 

@@ -1,4 +1,4 @@
-import { GrixShell } from "@/components/grix/GrixShell";
+import { ShellRouter } from "@/components/ShellRouter";
 import { SiteJsonLd } from "@/components/seo/SiteJsonLd";
 import { getSiteUrl } from "@/lib/site";
 import type { Metadata, Viewport } from "next";
@@ -95,7 +95,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-dvh flex-col font-sans antialiased">
         <SiteJsonLd />
-        <GrixShell>{children}</GrixShell>
+        <ShellRouter>{children}</ShellRouter>
       </body>
     </html>
   );

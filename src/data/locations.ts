@@ -9,6 +9,10 @@ export interface LocationInsight {
   summary: string;
   lifestyle: string;
   connectivity: string;
+  /** Optional image URL to override the default cover. */
+  coverImageUrl?: string;
+  /** Optional gallery images (used on dossier tiles) */
+  galleryImageUrls?: string[];
   strengths: string[];
   weaknesses: string[];
   futureGrowth: string;

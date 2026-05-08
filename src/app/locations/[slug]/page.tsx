@@ -1,7 +1,7 @@
+import { LocationMapSection } from "@/components/grix/LocationMapSection";
 import { LocationPropertiesShelf } from "@/components/grix/LocationPropertiesShelf";
 import { locationCoverUrl, locationGalleryTiles } from "@/data/imagery";
-import { NAVI_MUMBAI_LOCATIONS, getLocation } from "@/data/locations";
-import { PROJECTS } from "@/data/projects";
+import { getLocationLive, getLocationsLive, getProjectsLive, getSegmentsLive } from "@/lib/content/live-data";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,17 +13,18 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  return NAVI_MUMBAI_LOCATIONS.map((l) => ({ slug: l.slug }));
+  const locations = await getLocationsLive();
+  return locations.map((l) => ({ slug: l.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const loc = getLocation(slug);
+  const loc = await getLocationLive(slug);
   if (!loc) {
     return { title: "Location · The Grix" };
   }
   const desc = loc.summary;
-  const cover = locationCoverUrl(slug);
+  const cover = loc.coverImageUrl?.trim() ? loc.coverImageUrl : locationCoverUrl(slug);
   const ogImages = [{ url: cover, width: 1200, height: 630, alt: `${loc.name} — illustrative urban context` }];
 
   return {
@@ -49,12 +50,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function LocationPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const loc = getLocation(slug);
+  const loc = await getLocationLive(slug);
   if (!loc) notFound();
 
-  const projectsHere = PROJECTS.filter((p) => p.locationSlug === slug);
-  const tiles = locationGalleryTiles(slug);
-  const cover = locationCoverUrl(slug);
+  const [projects, segments] = await Promise.all([getProjectsLive(), getSegmentsLive()]);
+  const projectsHere = projects.filter((p) => p.locationSlug === slug);
+  const tiles =
+    loc.galleryImageUrls?.length && loc.galleryImageUrls.every((x) => typeof x === "string" && x.trim())
+      ? loc.galleryImageUrls
+      : locationGalleryTiles(slug);
+  const cover = loc.coverImageUrl?.trim() ? loc.coverImageUrl : locationCoverUrl(slug);
   const sp = (await searchParams) ?? {};
   const segment = typeof sp.segment === "string" ? sp.segment : undefined;
 
@@ -94,7 +99,7 @@ export default async function LocationPage({ params, searchParams }: Props) {
         </div>
       </div>
 
-      <LocationPropertiesShelf locationSlug={slug} projects={projectsHere} initialSegmentSlug={segment} />
+      <LocationPropertiesShelf locationSlug={slug} projects={projectsHere} segments={segments} initialSegmentSlug={segment} />
 
       <section className="grid gap-4 lg:grid-cols-3">
         {loc.imageHints.map((hint, idx) => {
@@ -146,6 +151,8 @@ export default async function LocationPage({ params, searchParams }: Props) {
         <h2 className="font-display text-xl font-semibold text-slate-900">Connectivity details</h2>
         <p className="mt-3 max-w-4xl text-sm leading-relaxed text-slate-600">{loc.connectivity}</p>
       </section>
+
+      <LocationMapSection locationName={loc.name} slug={slug} />
 
     </div>
   );

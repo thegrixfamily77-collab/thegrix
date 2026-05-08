@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "days": {
+    "2026-05-08": {
+      "pageViews": 3,
+      "uniqueVisitors": 1,
+      "enquiries": 0,
+      "signups": 0,
+      "seenVisitors": {
+        "0a546838-507f-420f-9cc4-c200ebd4b390": true
+      }
+    }
+  },
+  "lastPingMs": {
+    "0a546838-507f-420f-9cc4-c200ebd4b390": 1778264983705
+  }
+}

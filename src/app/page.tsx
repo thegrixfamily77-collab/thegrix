@@ -8,45 +8,52 @@ import { LocationExplorerFromUrl } from "@/components/grix/LocationExplorerFromU
 import { TrendingPulseSection } from "@/components/grix/TrendingPulseSection";
 import { VideoReviewsCarousel } from "@/components/grix/VideoReviewsCarousel";
 import { locationCoverUrl } from "@/data/imagery";
-import { NAVI_MUMBAI_LOCATIONS } from "@/data/locations";
-import { PROJECTS } from "@/data/projects";
+import { getHomepageLive, getLocationsLive, getProjectsLive } from "@/lib/content/live-data";
 import Link from "next/link";
 import { Suspense } from "react";
 
-const homeDescription =
-  "Explore eighteen Navi Mumbai micro-market dossiers, sector theses, and property shelf signals—strengths, risks, and trajectory notes in one research atlas.";
+export async function generateMetadata(): Promise<Metadata> {
+  const home = await getHomepageLive();
+  const description = home.metaDescription;
 
-export const metadata: Metadata = {
-  title: {
-    absolute: "The Grix — Navi Mumbai Real Estate Research Atlas",
-  },
-  description: homeDescription,
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "The Grix · Navi Mumbai Real Estate Research Atlas",
-    description: homeDescription,
-    url: "/",
-    type: "website",
-    locale: "en_IN",
-    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "The Grix research atlas" }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "The Grix · Navi Mumbai Real Estate Research Atlas",
-    description: homeDescription,
-    images: ["/opengraph-image"],
-  },
-};
+  return {
+    title: {
+      absolute: "The Grix — Navi Mumbai Real Estate Research Atlas",
+    },
+    description,
+    alternates: { canonical: "/" },
+    openGraph: {
+      title: "The Grix · Navi Mumbai Real Estate Research Atlas",
+      description,
+      url: "/",
+      type: "website",
+      locale: "en_IN",
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "The Grix research atlas" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "The Grix · Navi Mumbai Real Estate Research Atlas",
+      description,
+      images: ["/opengraph-image"],
+    },
+  };
+}
 
-export default function HomePage() {
-  const previews = [...NAVI_MUMBAI_LOCATIONS]
+export default async function HomePage() {
+  const locations = await getLocationsLive();
+  const projects = await getProjectsLive();
+  const home = await getHomepageLive();
+
+  const previews = [...locations]
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((l) => ({
       slug: l.slug,
       name: l.name,
       summary: l.summary,
-      imageSrc: locationCoverUrl(l.slug),
+      imageSrc: l.coverImageUrl?.trim() ? l.coverImageUrl : locationCoverUrl(l.slug),
     }));
+
+  const slides = previews.map((l) => ({ slug: l.slug, src: l.imageSrc, label: l.name }));
 
   return (
     <div className="flex flex-col gap-12 pb-10">
@@ -54,13 +61,14 @@ export default function HomePage() {
         <HeroLocationSlideshow
           className="max-w-none"
           heightClassName="h-[calc(100dvh-132px)] min-h-[540px] w-full"
+          slides={slides}
         />
         <div className="pointer-events-none absolute inset-x-0 top-6 z-20 flex flex-col items-center gap-2 px-4 sm:top-10">
           <p className="font-display text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl">
-            THE GRIX
+            {home.heroTitle}
           </p>
           <p className="grix-eyebrow text-[10px] font-semibold uppercase tracking-[0.36em] text-white/90 sm:text-[11px]">
-            RESEARCH | TRUST | INVEST
+            {home.heroEyebrow}
           </p>
         </div>
         <div className="absolute inset-x-0 bottom-6 z-20 flex flex-col items-center gap-3 px-4 sm:bottom-8 sm:flex-row sm:justify-center">
@@ -68,13 +76,13 @@ export default function HomePage() {
             href="/#locations"
             className="min-h-[44px] rounded-full bg-white/95 px-6 py-2.5 text-sm font-semibold text-slate-900 shadow-lg shadow-slate-950/10 backdrop-blur transition hover:bg-white sm:min-h-0"
           >
-            EXPLORE LOCATIONS
+            {home.heroCtaExplore}
           </Link>
           <Link
             href="/segments"
             className="min-h-[44px] rounded-full bg-white/10 px-6 py-2.5 text-sm font-semibold text-white ring-1 ring-white/25 shadow-lg shadow-slate-950/10 backdrop-blur transition hover:bg-white/15 sm:min-h-0"
           >
-            PROPERTY TYPE
+            {home.heroCtaPropertyType}
           </Link>
         </div>
       </section>
@@ -83,7 +91,7 @@ export default function HomePage() {
         <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-end sm:justify-between sm:pb-6">
           <div className="min-w-0 flex-1">
             <div className="mt-4 w-full">
-              <InvestmentQuotesTicker />
+              <InvestmentQuotesTicker quotes={home.tickerQuotes} />
             </div>
           </div>
         </div>
@@ -99,7 +107,7 @@ export default function HomePage() {
         </Suspense>
       </section>
 
-      <TrendingPulseSection locations={NAVI_MUMBAI_LOCATIONS} projects={PROJECTS} />
+      <TrendingPulseSection locations={locations} projects={projects} />
       <VideoReviewsCarousel />
       <LeadershipSection />
       <AwardsAndCultureSection />

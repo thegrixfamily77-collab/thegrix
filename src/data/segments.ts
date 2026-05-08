@@ -4,6 +4,8 @@ export interface SegmentProfile {
   summary: string;
   pastPerformance: string;
   presentPerformance: string;
+  /** Optional image URL to override the default feature image. */
+  featureImageUrl?: string;
   strengths: string[];
   weaknesses: string[];
 }

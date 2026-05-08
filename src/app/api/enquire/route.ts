@@ -1,3 +1,4 @@
+import { incrementEnquiries } from "@/lib/analytics/stats-store";
 import { NextResponse } from "next/server";
 
 const DEFAULT_APPS_SCRIPT_URL =
@@ -36,6 +37,12 @@ export async function POST(req: Request) {
       { ok: false, error: text || `Apps Script returned ${res.status}` },
       { status: 502 },
     );
+  }
+
+  try {
+    await incrementEnquiries();
+  } catch {
+    /* non-fatal — enquiry still succeeded upstream */
   }
 
   // Apps Script responses vary; we return a stable ack to the client.

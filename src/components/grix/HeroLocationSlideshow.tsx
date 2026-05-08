@@ -1,29 +1,32 @@
 "use client";
 
-import { HERO_SLIDE_INTERVAL_MS, heroLocationSlides } from "@/data/imagery";
+import { HERO_SLIDE_INTERVAL_MS } from "@/data/imagery";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-const SLIDES = heroLocationSlides();
+export type HeroSlide = { slug: string; src: string; label: string };
 
 export function HeroLocationSlideshow({
   heightClassName,
   className = "",
+  slides,
 }: {
   /** Override default aspect-ratio sizing (e.g. full viewport height). */
   heightClassName?: string;
   className?: string;
+  slides: HeroSlide[];
 }) {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
     const id = window.setInterval(() => {
-      setActive((i) => (i + 1) % SLIDES.length);
+      setActive((i) => (i + 1) % Math.max(1, slides.length));
     }, HERO_SLIDE_INTERVAL_MS);
     return () => window.clearInterval(id);
-  }, []);
+  }, [slides.length]);
 
-  const current = SLIDES[active];
+  const current = slides[active] ?? slides[0];
+  if (!current) return null;
 
   const height = heightClassName ?? "aspect-[5/4] w-full sm:aspect-[16/11]";
 
@@ -41,7 +44,7 @@ export function HeroLocationSlideshow({
         <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-slate-950/92 via-slate-950/15 to-transparent sm:from-slate-950/88 sm:via-transparent sm:to-indigo-950/12" />
 
         <div className={`relative ${height}`}>
-          {SLIDES.map((slide, i) => (
+          {slides.map((slide, i) => (
             <div
               key={slide.slug}
               className={`absolute inset-0 transition-opacity duration-[850ms] ease-in-out ${
