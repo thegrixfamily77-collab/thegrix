@@ -79,14 +79,13 @@ function normalize(payload: EnquirySubmission): Record<string, string> {
 }
 
 export async function submitEnquiry(payload: EnquirySubmission): Promise<EnquiryAck> {
-  const url = `${emanagerOrigin()}/api/inbound-leads`;
+  const url = `/api/enquire`;
   const body = normalize(payload);
 
   let res: Response;
   try {
     res = await fetch(url, {
       method: "POST",
-      mode: "cors",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify(body),
     });
