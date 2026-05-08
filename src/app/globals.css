@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --grix-accent: rgba(13, 148, 136, 0.09);
+  --grix-wash: rgba(79, 70, 229, 0.05);
+  --grix-base: #fafaf9;
+}
+
+@theme inline {
+  --font-sans: var(--font-grix-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-grix-display), ui-serif, "Cormorant Garamond", Georgia, serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+  background-color: var(--grix-base);
+  color: #334155;
+  font-feature-settings: "kern" 1, "liga" 1;
+  text-rendering: optimizeLegibility;
+}
+
+.grix-mesh {
+  background-color: var(--grix-base);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -40%, var(--grix-accent), transparent 58%),
+    radial-gradient(ellipse 90% 60% at 100% 0%, var(--grix-wash), transparent 50%),
+    radial-gradient(ellipse 70% 50% at 0% 100%, rgba(13, 148, 136, 0.06), transparent 45%);
+}
+
+.grix-grid-bg {
+  background-size: 56px 56px;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.14) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.14) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 75% 75% at 50% 35%, black 15%, transparent 72%);
+}
+
+/* Premium editorial headline — solid, high-trust (no clipped gradient text) */
+.grix-hero-title {
+  font-family: var(--font-grix-display), ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+  text-wrap: balance;
+}
+
+.grix-section-title {
+  font-family: var(--font-grix-display), ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.grix-eyebrow {
+  font-family: var(--font-grix-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.28em;
+}
+
+@keyframes grixQuoteDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes grixQuoteRoll {
+  from {
+    transform: translateY(0%);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
