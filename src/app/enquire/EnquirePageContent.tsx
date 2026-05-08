@@ -43,6 +43,24 @@ const NATURE_BY_CATEGORY: Record<
   ],
 };
 
+const BUDGET_MIN_LAKH = 25;
+const BUDGET_MAX_LAKH = 5000; // 50 Cr
+
+function formatBudgetFromLakh(lakh: number): string {
+  if (lakh < 100) return `₹${lakh}L`;
+  const cr = lakh / 100;
+  const rounded = cr >= 10 ? Math.round(cr) : Math.round(cr * 10) / 10;
+  return `₹${rounded}Cr`;
+}
+
+const TIMELINE_OPTIONS = [
+  "Immediate",
+  "Within 1 month",
+  "Within 3 months",
+  "Within 6 months",
+  "Will think",
+] as const;
+
 export function EnquirePageContent() {
   const searchParams = useSearchParams();
   const step = searchParams.get("step");
@@ -61,6 +79,11 @@ export function EnquirePageContent() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [propertyCategory, setPropertyCategory] = useState<PropertyCategoryValue | "">("");
   const [propertyNature, setPropertyNature] = useState<PropertyNatureValue | "">("");
+  const [budgetLakh, setBudgetLakh] = useState<number>(100); // default ₹1Cr
+  const [timelineIdx, setTimelineIdx] = useState<number>(1);
+  const [cbHour, setCbHour] = useState<number>(11);
+  const [cbMinute, setCbMinute] = useState<number>(0);
+  const [cbAmPm, setCbAmPm] = useState<"AM" | "PM">("AM");
 
   const natureOptions = propertyCategory ? NATURE_BY_CATEGORY[propertyCategory] : [];
 
@@ -205,26 +228,59 @@ export function EnquirePageContent() {
               </select>
             </label>
           </div>
-          <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-800">
-            Budget
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-slate-800">Budget</p>
+                <p className="font-display mt-1 text-2xl font-semibold tracking-tight text-slate-900">
+                  {formatBudgetFromLakh(budgetLakh)}
+                </p>
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                {formatBudgetFromLakh(BUDGET_MIN_LAKH)} – {formatBudgetFromLakh(BUDGET_MAX_LAKH)}
+              </p>
+            </div>
+
+            <input type="hidden" name="budget" value={formatBudgetFromLakh(budgetLakh)} readOnly />
             <input
-              required
-              name="budget"
-              type="text"
-              className="rounded-xl border border-slate-200 px-4 py-3 text-[15px] text-slate-900 outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20"
-              placeholder="e.g., ₹80L – ₹1.2Cr"
+              aria-label="Budget slider"
+              type="range"
+              min={BUDGET_MIN_LAKH}
+              max={BUDGET_MAX_LAKH}
+              step={25}
+              value={budgetLakh}
+              onChange={(e) => setBudgetLakh(Number(e.target.value))}
+              className="mt-4 w-full accent-teal-600"
             />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-800">
-            Timeline to purchase
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-slate-800">Purchase timeline</p>
+                <p className="font-display mt-1 text-2xl font-semibold tracking-tight text-slate-900">
+                  {TIMELINE_OPTIONS[timelineIdx]}
+                </p>
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Slide to choose</p>
+            </div>
+
+            <input type="hidden" name="timeline" value={TIMELINE_OPTIONS[timelineIdx]} readOnly />
             <input
-              required
-              name="timeline"
-              type="text"
-              className="rounded-xl border border-slate-200 px-4 py-3 text-[15px] text-slate-900 outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20"
-              placeholder="e.g., 0–3 months"
+              aria-label="Timeline slider"
+              type="range"
+              min={0}
+              max={TIMELINE_OPTIONS.length - 1}
+              step={1}
+              value={timelineIdx}
+              onChange={(e) => setTimelineIdx(Number(e.target.value))}
+              className="mt-4 w-full accent-teal-600"
             />
-          </label>
+            <div className="mt-2 flex justify-between text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+              <span>Immediate</span>
+              <span>Will think</span>
+            </div>
+          </div>
           <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-800">
             Current location
             <input
@@ -260,11 +316,46 @@ export function EnquirePageContent() {
           <label className="flex flex-col gap-1.5 text-sm font-medium text-slate-800">
             Preferred callback time
             <input
+              type="hidden"
               name="preferred_time"
-              type="text"
-              className="rounded-xl border border-slate-200 px-4 py-3 text-[15px] text-slate-900 outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20"
-              placeholder="e.g., Today 4–6pm"
+              value={`${String(cbHour).padStart(2, "0")}:${String(cbMinute).padStart(2, "0")} ${cbAmPm}`}
+              readOnly
             />
+            <div className="grid grid-cols-3 gap-3">
+              <select
+                value={cbHour}
+                onChange={(e) => setCbHour(Number(e.target.value))}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-[15px] font-semibold text-slate-900 outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20"
+                aria-label="Callback hour"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                  <option key={h} value={h}>
+                    {String(h).padStart(2, "0")}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={cbMinute}
+                onChange={(e) => setCbMinute(Number(e.target.value))}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-[15px] font-semibold text-slate-900 outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20"
+                aria-label="Callback minute"
+              >
+                {[0, 15, 30, 45].map((m) => (
+                  <option key={m} value={m}>
+                    {String(m).padStart(2, "0")}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={cbAmPm}
+                onChange={(e) => setCbAmPm(e.target.value as "AM" | "PM")}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-[15px] font-semibold text-slate-900 outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-500/20"
+                aria-label="AM or PM"
+              >
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
           </label>
           {errorMsg ? (
             <p
